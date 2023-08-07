@@ -5,8 +5,10 @@
 venv/
 
 # Ignore image directories
-datasets/
 checkpoints/*
 !checkpoints/*/web/index.html
 !checkpoints/*/loss_log.txt
 !checkpoints/*/option.txt
+datasets/
+results/*
+!results/*/*/index.html
