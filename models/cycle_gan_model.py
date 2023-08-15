@@ -109,17 +109,22 @@ class CycleGANModel(BaseModel):
         self.real_A1 = Variable(self.input_A1)
         self.real_A2 = Variable(self.input_A2)
         self.real_B = Variable(self.input_B)
+        # remoce addistional frames diementon
+        self.real_A1 = self.real_A1.squeeze(1)
+        self.real_A2 = self.real_A2.squeeze(1)
+        # print("shape input a1", self.input_A1.shape)  -> torch.Size([1, 1, 3, 256, 256])
+        # print("shape real a1", self.real_A1.shape) -> torch.Size([1, 3, 256, 256])
 
     def test(self):
         self.real_A1 = Variable(self.input_A1, volatile=True)
         self.real_A2 = Variable(self.input_A2, volatile=True)
 
-        real_A1_rgb_tensor = torch.cat(
-            [self.real_A1, self.real_A1, self.real_A1], dim=1)
-        real_A2_rgb_tensor = torch.cat(
-            [self.real_A2, self.real_A2, self.real_A2], dim=1)
+        # real_A1_rgb_tensor = torch.cat(
+        #     [self.real_A1, self.real_A1, self.real_A1], dim=1) #TODO: increase the dimention 1 to  3
+        # real_A2_rgb_tensor = torch.cat(
+        #     [self.real_A2, self.real_A2, self.real_A2], dim=1)
         self.fake_B, latent_fB, self.intermediate_fakeB = self.netG_A.forward(
-            real_A1_rgb_tensor, real_A2_rgb_tensor)
+            self.real_A1, self.real_A2)
         self.rec_A1, self.rec_A2, latent_rA, self.intermediate_realA = self.netG_B.forward(
             self.fake_B)
         self.real_B = Variable(self.input_B, volatile=True)
@@ -152,12 +157,12 @@ class CycleGANModel(BaseModel):
     def backward_D_B(self):
         fake_A1 = self.fake_A1_pool.query(self.fake_A1)
         fake_A2 = self.fake_A2_pool.query(self.fake_A2)
-        real_A1_rgb_tensor = torch.cat(
-            [self.real_A1, self.real_A1, self.real_A1], dim=1)
-        real_A2_rgb_tensor = torch.cat(
-            [self.real_A2, self.real_A2, self.real_A2], dim=1)
-        self.loss_D_B = 0.5*(self.backward_D_basic(self.netD_B1, real_A1_rgb_tensor,
-                             fake_A1)+self.backward_D_basic(self.netD_B2, real_A2_rgb_tensor, fake_A2))
+        # real_A1_rgb_tensor = torch.cat(
+        #     [self.real_A1, self.real_A1, self.real_A1], dim=1) #TODO: increase the dimention 1 to  3
+        # real_A2_rgb_tensor = torch.cat(
+        #     [self.real_A2, self.real_A2, self.real_A2], dim=1)
+        self.loss_D_B = 0.5*(self.backward_D_basic(self.netD_B1, self.real_A1,
+                             fake_A1)+self.backward_D_basic(self.netD_B2, self.real_A2, fake_A2))
 
     def l1_loss(self, input, target):
         return torch.sum(torch.abs(input - target)) / input.data.nelement()
@@ -173,12 +178,12 @@ class CycleGANModel(BaseModel):
 
         # GAN loss
         # D_A(G_A(A))
-        real_A1_rgb_tensor = torch.cat(
-            [self.real_A1, self.real_A1, self.real_A1], dim=1)
-        real_A2_rgb_tensor = torch.cat(
-            [self.real_A2, self.real_A2, self.real_A2], dim=1)
+        # real_A1_rgb_tensor = torch.cat(
+        #     [self.real_A1, self.real_A1, self.real_A1], dim=1)  #TODO: increase the dimention 1 to  3
+        # real_A2_rgb_tensor = torch.cat(
+        #     [self.real_A2, self.real_A2, self.real_A2], dim=1)
         self.fake_B, latent_fB, self.intermediate_fakeB = self.netG_A.forward(
-            real_A1_rgb_tensor, real_A2_rgb_tensor)
+            self.real_A1, self.real_A2)
         pred_fake = self.netD_A.forward(self.fake_B)
         self.loss_G_A = self.criterionGAN(pred_fake, True)
 
@@ -249,6 +254,7 @@ class CycleGANModel(BaseModel):
     def get_current_visuals(self):
         real_A1 = util.tensor2im(self.real_A1.data)
         real_A2 = util.tensor2im(self.real_A2.data)
+        print(self.real_A1.data.shape, self.real_A2.data.shape)
         fake_B = util.tensor2im(self.fake_B.data)
         rec_A1 = util.tensor2im(self.rec_A1.data)
         rec_A2 = util.tensor2im(self.rec_A2.data)
