@@ -10,7 +10,7 @@ import os
 
 datasetA = '/hdd/2019CS077/Dataset/testA1/*.JPEG'
 datasetB = '/hdd/2019CS077/Dataset/testA2/*.JPEG'
-destination = '/hdd/2019CS077/Code/v0/datasets/maps/testA/'
+destination = '/hdd/2019CS077/TestCode/v0/datasets/maps/testA/'
 
 dataA = glob.glob(datasetA)
 dataA = sorted(dataA)
@@ -25,27 +25,21 @@ for i, j in zip(dataA, dataB):
     if (count > 500):
         break
 
-    img_A = cv2.imread(j, 0)
-    img_B = cv2.imread(i, 0)
+    img_A = cv2.imread(i)
+    img_B = cv2.imread(j)
+
     dim = (256, 256)
     img_A = cv2.resize(img_A, dim, interpolation=cv2.INTER_AREA)
     img_B = cv2.resize(img_B, dim, interpolation=cv2.INTER_AREA)
 
     line = img_A
 
-    out = np.zeros((np.shape(img_B)[0]*2, np.shape(img_B)[1], 3))
-    out[0:np.shape(img_B)[1], :, 0] = img_B
-    out[0:np.shape(img_B)[1], :, 1] = img_B
-    out[0:np.shape(img_B)[1], :, 2] = img_B
-    out[np.shape(img_B)[1]:2*np.shape(img_B)[1], :, 0] = line
-    out[np.shape(img_B)[1]:2*np.shape(img_B)[1], :, 1] = line
-    out[np.shape(img_B)[1]:2*np.shape(img_B)[1], :, 2] = line
+    # Vertically stack images
+    stacked_image = cv2.vconcat([img_A, img_B])
 
-    # Scale the pixel values to the range 0-255
-    out = (out - np.min(out)) * (255.0 / (np.max(out) - np.min(out)))
-
-    # Convert the NumPy array to a PIL Image object
-    image = Image.fromarray(out.astype(np.uint8))
-
-    # Saving the output to the destination
-    image.save(destination + str(count) + '.jpeg')
+    # Save the stacked image
+    # Use input image's filename for the output
+    output_filename = os.path.basename(i)
+    output_path = os.path.join(destination + str(count) + '.jpeg')
+    cv2.imwrite(output_path, stacked_image)
+print('%d images generated !' % (count))
