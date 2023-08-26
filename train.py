@@ -3,6 +3,7 @@ from options.train_options import TrainOptions
 from data.data_loader import CreateDataLoader
 from models.models import create_model
 from util.visualizer import Visualizer
+import os
 
 opt = TrainOptions().parse()
 data_loader = CreateDataLoader(opt)
@@ -13,6 +14,9 @@ print('#training images = %d' % dataset_size)
 model = create_model(opt)
 visualizer = Visualizer(opt)
 total_steps = 0
+
+loss_log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
+model_start_time = time.time()
 
 for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
     epoch_start_time = time.time()
@@ -51,3 +55,10 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
     print('End of epoch %d / %d \t Time Taken: %d sec' %
           (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
     model.update_learning_rate()
+
+with open(loss_log_name, "a") as log_file:
+    now = time.strftime("%c")
+    log_file.write('================ Total Time : (%.3f) ================\n' % (
+        time.time() - model_start_time))
+    log_file.write(
+        '================ Training Loss Ended(%s) ================\n' % now)  # TODO: log thes on something
