@@ -123,6 +123,9 @@ class CycleGANModel(BaseModel):
         #     [self.real_A1, self.real_A1, self.real_A1], dim=1) #TODO: increase the dimention 1 to  3
         # real_A2_rgb_tensor = torch.cat(
         #     [self.real_A2, self.real_A2, self.real_A2], dim=1)
+        # remoce addistional frames diementon
+        self.real_A1 = self.real_A1.squeeze(1)
+        self.real_A2 = self.real_A2.squeeze(1)
         self.fake_B, latent_fB, self.intermediate_fakeB = self.netG_A.forward(
             self.real_A1, self.real_A2)
         self.rec_A1, self.rec_A2, latent_rA, self.intermediate_realA = self.netG_B.forward(
