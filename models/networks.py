@@ -9,9 +9,36 @@ from PIL import Image
 import torchvision.transforms.functional as F
 import torch.nn.functional as F
 from torchvision.transforms import ToTensor
+from torchvision import transforms
 ###############################################################################
 # Functions
 ###############################################################################
+
+
+def scramble(image, block_size):
+    # Convert image tensor to a NumPy array
+    image_array = image.squeeze(0).permute(1, 2, 0).detach().cpu().numpy()
+    xres, yres = image_array.shape[:2]  # Get the resolution of the image
+
+    # Scramble blocks of size from 2x2 to block_size x block_size
+    for i in range(2, block_size + 1):
+        for j in range(xres // i):
+            for k in range(yres // i):
+                block = image_array[j * i:(j + 1) * i, k * i:(k + 1) * i]
+                image_array[j * i:(j + 1) * i, k * i:(k + 1)
+                            * i] = np.rot90(block, 2)
+
+    # Scramble larger blocks of size from 3x3 to block_size x block_size
+    for i in range(3, block_size+1):
+        for j in range(xres // (block_size+2-i)):
+            for k in range(yres // (block_size+2-i)):
+                block = image_array[j*(block_size+2-i):(j+1)*(block_size+2-i),
+                                    k*(block_size+2-i):(k+1)*(block_size+2-i)]
+                image_array[j*(block_size+2-i):(j+1)*(block_size+2-i), k *
+                            (block_size+2-i):(k+1)*(block_size+2-i)] = np.rot90(block, 2)
+
+    # Convert the NumPy array back to a tensor
+    return transforms.ToTensor()(image_array).unsqueeze(0).to(torch.device("cuda"))
 
 
 def weights_init_normal(m):

@@ -12,3 +12,8 @@ checkpoints/*
 datasets/
 results/*
 !results/*/*/index.html
+
+# Ignore joblists
+*.list
+*.log
+*.txt
