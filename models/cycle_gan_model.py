@@ -28,7 +28,7 @@ class CycleGANModel(BaseModel):
 
         # load/define networks
         #  G_A (G), G_B (F), D_A (D_Y), D_B (D_X)
-        print([opt.output_nc, opt.input_nc])
+        # print([opt.output_nc, opt.input_nc])
         self.netG_A = (networks.define_G(opt.input_nc, opt.output_nc, opt.ngf,
                        'resnetMM', opt.norm, not opt.no_dropout, opt.init_type, self.gpu_ids))
 
@@ -119,10 +119,6 @@ class CycleGANModel(BaseModel):
         self.real_A1 = Variable(self.input_A1, volatile=True)
         self.real_A2 = Variable(self.input_A2, volatile=True)
 
-        # real_A1_rgb_tensor = torch.cat(
-        #     [self.real_A1, self.real_A1, self.real_A1], dim=1) #TODO: increase the dimention 1 to  3
-        # real_A2_rgb_tensor = torch.cat(
-        #     [self.real_A2, self.real_A2, self.real_A2], dim=1)
         # remoce addistional frames diementon
         self.real_A1 = self.real_A1.squeeze(1)
         self.real_A2 = self.real_A2.squeeze(1)
@@ -160,10 +156,6 @@ class CycleGANModel(BaseModel):
     def backward_D_B(self):
         fake_A1 = self.fake_A1_pool.query(self.fake_A1)
         fake_A2 = self.fake_A2_pool.query(self.fake_A2)
-        # real_A1_rgb_tensor = torch.cat(
-        #     [self.real_A1, self.real_A1, self.real_A1], dim=1) #TODO: increase the dimention 1 to  3
-        # real_A2_rgb_tensor = torch.cat(
-        #     [self.real_A2, self.real_A2, self.real_A2], dim=1)
         self.loss_D_B = 0.5*(self.backward_D_basic(self.netD_B1, self.real_A1,
                              fake_A1)+self.backward_D_basic(self.netD_B2, self.real_A2, fake_A2))
 
@@ -172,19 +164,15 @@ class CycleGANModel(BaseModel):
 
     def backward_G(self):
         lambda_idt = self.opt.identity
-        lambda_A = 15
+        lambda_A = self.opt.lambda_A
         lambda_B = self.opt.lambda_B
-        lambda_latent = 1.0
-        lambda_new = 10
+        lambda_latent = self.opt.lambda_latent
+        lambda_new = self.opt.lambda_intermediate
         self.loss_idt_A = 0
         self.loss_idt_B = 0
 
         # GAN loss
         # D_A(G_A(A))
-        # real_A1_rgb_tensor = torch.cat(
-        #     [self.real_A1, self.real_A1, self.real_A1], dim=1)  #TODO: increase the dimention 1 to  3
-        # real_A2_rgb_tensor = torch.cat(
-        #     [self.real_A2, self.real_A2, self.real_A2], dim=1)
         self.fake_B, latent_fB, self.intermediate_fakeB = self.netG_A.forward(
             self.real_A1, self.real_A2)
         pred_fake = self.netD_A.forward(self.fake_B)
