@@ -28,21 +28,20 @@ class CycleGANModel(BaseModel):
 
         # load/define networks
         #  G_A (G), G_B (F), D_A (D_Y), D_B (D_X)
-        # print([opt.output_nc, opt.input_nc])
         self.netG_A = (networks.define_G(opt.input_nc, opt.output_nc, opt.ngf,
-                       'resnetMM', opt.norm, not opt.no_dropout, opt.init_type, self.gpu_ids))
+                       'resnetMM', opt.norm, not opt.no_dropout, opt.init_type, self.gpu_ids)).to('cuda')
 
         self.netG_B = (networks.define_G(opt.input_nc, opt.output_nc, opt.ngf,
-                       'resnetMMReverse', opt.norm, not opt.no_dropout, opt.init_type, self.gpu_ids))
+                       'resnetMMReverse', opt.norm, not opt.no_dropout, opt.init_type, self.gpu_ids)).to('cuda')
 
         if self.isTrain:
             use_sigmoid = opt.no_lsgan
-            self.netD_A = networks.define_D(opt.output_nc, opt.ndf, opt.which_model_netD,
-                                            opt.n_layers_D, opt.norm, use_sigmoid, opt.init_type, self.gpu_ids)
-            self.netD_B1 = networks.define_D(
-                opt.input_nc, opt.ndf, opt.which_model_netD, opt.n_layers_D, opt.norm, use_sigmoid, opt.init_type, self.gpu_ids)
-            self.netD_B2 = networks.define_D(
-                opt.input_nc, opt.ndf, opt.which_model_netD, opt.n_layers_D, opt.norm, use_sigmoid, opt.init_type, self.gpu_ids)
+            self.netD_A = (networks.define_D(opt.output_nc, opt.ndf, opt.which_model_netD,
+                                             opt.n_layers_D, opt.norm, use_sigmoid, opt.init_type, self.gpu_ids)).to('cuda')
+            self.netD_B1 = (networks.define_D(
+                opt.input_nc, opt.ndf, opt.which_model_netD, opt.n_layers_D, opt.norm, use_sigmoid, opt.init_type, self.gpu_ids)).to('cuda')
+            self.netD_B2 = (networks.define_D(
+                opt.input_nc, opt.ndf, opt.which_model_netD, opt.n_layers_D, opt.norm, use_sigmoid, opt.init_type, self.gpu_ids)).to('cuda')
 
         if not self.isTrain or opt.continue_train:
 
@@ -60,8 +59,8 @@ class CycleGANModel(BaseModel):
             self.fake_A2_pool = ImagePool(opt.pool_size)
             self.fake_B_pool = ImagePool(opt.pool_size)
             # define loss functions
-            self.criterionGAN = networks.GANLoss(
-                use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
+            self.criterionGAN = (networks.GANLoss(
+                use_lsgan=not opt.no_lsgan, tensor=self.Tensor)).to('cuda')
             self.criterionCycle = torch.nn.L1Loss()
             self.criterionIdt = torch.nn.L1Loss()
             self.criterionLatent = torch.nn.L1Loss()
@@ -100,15 +99,17 @@ class CycleGANModel(BaseModel):
         input_A1 = input['A1']
         input_A2 = input['A2']
         input_B = input['B']
-        self.input_A1.resize_(input_A1.size()).copy_(input_A1)
-        self.input_A2.resize_(input_A2.size()).copy_(input_A2)
-        self.input_B.resize_(input_B.size()).copy_(input_B)
+        self.input_A1.resize_(input_A1.size()).copy_(input_A1).to('cuda')
+        self.input_A2.resize_(input_A2.size()).copy_(input_A2).to('cuda')
+        self.input_B.resize_(input_B.size()).copy_(input_B).to('cuda')
         self.image_paths = input['A_paths' if AtoB else 'B_paths']
+        print("heloo", self.input_A1.device,
+              self.input_A2.device, self.input_B.device)
 
     def forward(self):
-        self.real_A1 = Variable(self.input_A1)
-        self.real_A2 = Variable(self.input_A2)
-        self.real_B = Variable(self.input_B)
+        self.real_A1 = Variable(self.input_A1).to('cuda')
+        self.real_A2 = Variable(self.input_A2).to('cuda')
+        self.real_B = Variable(self.input_B).to('cuda')
         # remoce addistional frames diementon
         self.real_A1 = self.real_A1.squeeze(1)
         self.real_A2 = self.real_A2.squeeze(1)
