@@ -21,8 +21,8 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--which_epoch', type=str, default='latest',
                                  help='which epoch to load? set to latest to use latest cached model')
         self.parser.add_argument(
-            '--niter', type=int, default=15, help='# of iter at starting learning rate')
-        self.parser.add_argument('--niter_decay', type=int, default=10,
+            '--niter', type=int, default=50, help='# of iter at starting learning rate')
+        self.parser.add_argument('--niter_decay', type=int, default=50,
                                  help='# of iter to linearly decay learning rate to zero')
         self.parser.add_argument(
             '--beta1', type=float, default=0.5, help='momentum term of adam')
@@ -31,9 +31,13 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--no_lsgan', action='store_true',
                                  help='do *not* use least square GAN, if false, use vanilla GAN')
         self.parser.add_argument(
-            '--lambda_A', type=float, default=10.0, help='weight for cycle loss (A -> B -> A)')
+            '--lambda_A', type=float, default=15.0, help='weight for cycle loss (A -> B -> A)')
         self.parser.add_argument(
             '--lambda_B', type=float, default=10.0, help='weight for cycle loss (B -> A -> B)')
+        self.parser.add_argument(
+            '--lambda_intermediate', type=float, default=10.0, help='weight for intermadiate consistency loss')
+        self.parser.add_argument(
+            '--lambda_latent', type=float, default=1.0, help='weight for latent consistency loss')
         self.parser.add_argument('--pool_size', type=int, default=50,
                                  help='the size of image buffer that stores previously generated images')
         self.parser.add_argument('--no_html', action='store_true',

@@ -39,4 +39,4 @@ for i, j in zip(dataA, dataB):
     output_filename = os.path.basename(i)
     output_path = os.path.join(destination + str(count) + '.jpeg')
     cv2.imwrite(output_path, stacked_image)
-print('%d images generated !' % (count))
+print('%d images generated !' % (count-1))
