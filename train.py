@@ -4,8 +4,11 @@ from data.data_loader import CreateDataLoader
 from models.models import create_model
 from util.visualizer import Visualizer
 import os
+import torch
 
 opt = TrainOptions().parse()
+torch.backends.cudnn.benchmark = True
+
 data_loader = CreateDataLoader(opt)
 dataset = data_loader.load_data()
 dataset_size = len(data_loader)
@@ -52,7 +55,7 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
         model.save('latest')
         model.save(epoch)
 
-    print('End of epoch %d / %d \t Time Taken: %d sec' %
+    print('End of epoch %d / %d 	 Time Taken: %d sec' %
           (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
     model.update_learning_rate()
 
